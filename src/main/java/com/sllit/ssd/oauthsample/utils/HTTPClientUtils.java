@@ -1,64 +1,41 @@
 package com.sllit.ssd.oauthsample.utils;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by dinukshakandasamanage on 10/9/18.
  */
 public class HTTPClientUtils {
 
-    public static String executeGet(String targetURL, String urlParameters) {
-        HttpURLConnection connection = null;
+    public static String executePost(String targetURL, Map params) throws IOException {
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        HttpPost httpPost = new HttpPost(targetURL);
+        httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
-        try {
-            //Create connection
-            URL url = new URL(targetURL);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Content-Type",
-                    "application/x-www-form-urlencoded");
-
-            connection.setRequestProperty("Content-Length",
-                    Integer.toString(urlParameters.getBytes().length));
-            connection.setRequestProperty("Content-Language", "en-US");
-
-            connection.setUseCaches(false);
-            connection.setDoOutput(true);
-
-            //Send request
-            DataOutputStream wr = new DataOutputStream (
-                    connection.getOutputStream());
-            wr.writeBytes(urlParameters);
-            wr.close();
-
-            //Get Response
-            InputStream is = connection.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-            StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
-            String line;
-            while ((line = rd.readLine()) != null) {
-                response.append(line);
-                response.append('\r');
-            }
-            rd.close();
-            return response.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
+        List<NameValuePair> paramList = new ArrayList<NameValuePair>();
+        params.forEach((k, v) -> {
+            paramList.add(new BasicNameValuePair(k.toString(), v.toString()));
+        });
+        httpPost.setEntity(new UrlEncodedFormEntity(paramList, "UTF-8"));
+        CloseableHttpResponse response = client.execute(httpPost);
+        ResponseHandler<String> handler = new BasicResponseHandler();
+        return handler.handleResponse(response);
     }
 
     public static String executeGetWithAuthorization(String targetURL, String accessToken) throws IOException {

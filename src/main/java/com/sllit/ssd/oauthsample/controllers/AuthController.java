@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -76,14 +77,16 @@ public class AuthController {
         String redirectUri = PropertyLoader.getPropertyLoaderInstance()
                 .readProperty(PropertyConstants.APP_PROPERTIES_FILE, PropertyConstants.REDIRECT_URI);
 
-        String urlParams = "code=" + code +
-                "&client_id=" + clientId +
-                "&client_secret=" + clientSecret +
-                "&redirect_uri=" + encodeURL(redirectUri)+
-                "&grant_type=authorization_code";
+        Map<String, String> params = new HashMap<>();
+        params.put("code", code);
+        params.put("client_id", clientId);
+        params.put("client_secret", clientSecret);
+        params.put("redirect_uri", redirectUri);
+        params.put("grant_type", "authorization_code");
 
-        String tokenResponse = HTTPClientUtils.executeGet(PropertyLoader.getPropertyLoaderInstance()
-                .readProperty(PropertyConstants.APP_PROPERTIES_FILE, PropertyConstants.TOKEN_ENDPOINT), urlParams);
+        String tokenResponse = HTTPClientUtils.executePost(PropertyLoader.getPropertyLoaderInstance()
+                .readProperty(PropertyConstants.APP_PROPERTIES_FILE, PropertyConstants.TOKEN_ENDPOINT), params);
+
 
         Gson gson = new Gson();
         Type type = new TypeToken<Map<String, String>>(){}.getType();
