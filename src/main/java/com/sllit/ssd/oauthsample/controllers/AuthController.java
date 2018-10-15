@@ -55,7 +55,8 @@ public class AuthController {
                 "&response_type=code" +
                 "&client_id=" + clientId +
                 "&scope=" + encodeURL(scope) +
-                "&access_type=offline";
+                "&access_type=offline" +
+                "&state=1234";
     }
 
     /**
@@ -68,7 +69,7 @@ public class AuthController {
      * @throws IOException
      */
     @GetMapping("callback")
-    public String callback(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
+    public String callback(@RequestParam("code") String code, @RequestParam("state") String state, HttpServletResponse response) throws IOException {
 
         String clientId = PropertyLoader.getPropertyLoaderInstance()
                 .readProperty(PropertyConstants.APP_PROPERTIES_FILE, PropertyConstants.CLIENT_ID);
